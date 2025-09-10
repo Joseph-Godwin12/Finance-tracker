@@ -1,4 +1,3 @@
-// src/components/Charts.tsx
 import {
   LineChart,
   Line,
@@ -36,22 +35,22 @@ const COLORS = ["#3b82f6", "#f97316", "#22c55e", "#ef4444"]; // blue, orange, gr
 
 export default function Charts() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 w-full">
       {/* Line Chart */}
-      <div className="p-4 bg-white dark:bg-gray-800 rounded-xl shadow">
-        <h2 className="text-lg font-semibold mb-4 text-blue-400 dark:text-blue-300">
+      <div className="p-4 bg-white dark:bg-gray-800 rounded-xl shadow w-full">
+        <h2 className="text-lg font-semibold mb-4 text-blue-400 dark:text-blue-300 truncate">
           Spending Trend (Last 7 Days)
         </h2>
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={trendData}>
-            <XAxis dataKey="day" stroke="#9ca3af" /> {/* gray-400 */}
+        <ResponsiveContainer width="100%" height={250}>
+          <LineChart data={trendData} margin={{ right: 10, left: -10 }}>
+            <XAxis dataKey="day" stroke="#9ca3af" />
             <YAxis stroke="#9ca3af" />
             <Tooltip
               contentStyle={{
-                backgroundColor: "#1f2937", // gray-800
+                backgroundColor: "#1f2937",
                 border: "none",
                 borderRadius: "8px",
-                color: "#f3f4f6", // gray-100
+                color: "#f3f4f6",
               }}
             />
             <Line
@@ -66,18 +65,18 @@ export default function Charts() {
       </div>
 
       {/* Pie Chart */}
-      <div className="p-4 bg-white dark:bg-gray-800 rounded-xl shadow">
-        <h2 className="text-lg font-semibold mb-4 text-blue-400 dark:text-blue-300">
+      <div className="p-4 bg-white dark:bg-gray-800 rounded-xl shadow w-full">
+        <h2 className="text-lg font-semibold mb-4 text-blue-400 dark:text-blue-300 truncate">
           Expense Breakdown
         </h2>
-        <ResponsiveContainer width="100%" height={300}>
+        <ResponsiveContainer width="100%" height={250}>
           <PieChart>
             <Pie
               data={pieData}
               cx="50%"
               cy="50%"
               labelLine={false}
-              outerRadius={100}
+              outerRadius={80}
               fill="#8884d8"
               dataKey="value"
               label={({ name, value }) => {
@@ -98,15 +97,16 @@ export default function Charts() {
             </Pie>
             <Legend
               wrapperStyle={{
-                color: "#9ca3af", // gray-400 (will show in dark mode)
+                color: "#9ca3af",
+                fontSize: "0.8rem",
               }}
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: "#1f2937", // gray-800
+                backgroundColor: "#1f2937",
                 border: "none",
                 borderRadius: "8px",
-                color: "#f3f4f6", // gray-100
+                color: "#f3f4f6",
               }}
             />
           </PieChart>

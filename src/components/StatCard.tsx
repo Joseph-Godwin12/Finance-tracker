@@ -1,4 +1,3 @@
-// src/components/StatCard.tsx
 import type { ReactNode } from "react";
 
 interface StatCardProps {
@@ -16,15 +15,15 @@ export default function StatCard({ title, amount, icon, color }: StatCardProps) 
   };
 
   return (
-    <div className="p-4 bg-white dark:bg-gray-800 rounded-xl shadow hover:shadow-md transition duration-200">
-      <div className="flex items-center justify-between">
+    <div className="p-4 bg-white dark:bg-gray-800 rounded-xl w-full min-w-0 shadow hover:shadow-md transition duration-200">
+      <div className="flex items-center justify-between min-w-0">
         {/* Icon with dynamic color */}
-        <div className={`${colorMap[color]} text-2xl`}>{icon}</div>
+        <div className={`${colorMap[color]} text-2xl flex-shrink-0`}>{icon}</div>
 
         {/* Text info */}
-        <div className="text-right">
-          <p className="text-sm text-gray-500 dark:text-gray-400">{title}</p>
-          <p className="text-xl font-bold text-gray-900 dark:text-gray-100">
+        <div className="text-right truncate">
+          <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{title}</p>
+          <p className="text-xl font-bold text-gray-900 dark:text-gray-100 truncate">
             ₦{amount.toLocaleString()}
           </p>
         </div>

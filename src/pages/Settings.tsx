@@ -15,7 +15,7 @@ export default function Settings({ darkMode, setDarkMode }: Props) {
   const [timezone, setTimezone] = useState("GMT+1");
   const [language, setLanguage] = useState("English");
 
-  // ✅ Load saved settings
+  // Load saved settings
   useEffect(() => {
     const saved = localStorage.getItem("settings");
     if (saved) {
@@ -29,7 +29,7 @@ export default function Settings({ darkMode, setDarkMode }: Props) {
     }
   }, []);
 
-  // ✅ Save whenever settings change
+  // Save whenever settings change
   useEffect(() => {
     localStorage.setItem(
       "settings",
@@ -41,7 +41,7 @@ export default function Settings({ darkMode, setDarkMode }: Props) {
     <div className="p-6 bg-gray-50 dark:bg-gray-900 min-h-screen">
       <h1 className="text-2xl font-bold text-blue-400 mb-6">Settings</h1>
 
-      <div className="space-y-6 max-w-lg">
+      <div className="space-y-6 max-w-lg w-full">
         {/* Profile Info */}
         <div>
           <label className="block text-sm font-medium mb-1">Name</label>
@@ -63,7 +63,6 @@ export default function Settings({ darkMode, setDarkMode }: Props) {
           />
         </div>
 
-        {/* Phone */}
         <div>
           <label className="block text-sm font-medium mb-1">Phone Number</label>
           <input
@@ -76,9 +75,7 @@ export default function Settings({ darkMode, setDarkMode }: Props) {
 
         {/* Currency */}
         <div>
-          <label className="block text-sm font-medium mb-1">
-            Preferred Currency
-          </label>
+          <label className="block text-sm font-medium mb-1">Preferred Currency</label>
           <select
             value={currency}
             onChange={(e) => setCurrency(e.target.value)}
@@ -122,14 +119,13 @@ export default function Settings({ darkMode, setDarkMode }: Props) {
         {/* Dark Mode */}
         <div className="flex items-center justify-between">
           <span className="font-medium">Dark Mode</span>
-          <button
+          {/* Use a div instead of button to avoid nested button error */}
+          <div
             onClick={() => setDarkMode(!darkMode)}
-            className={`px-4 py-2 rounded-lg transition ${
-              darkMode ? "text-white" : "dark:bg-gray-700"
-            }`}
+            className="cursor-pointer px-2 py-1"
           >
             <DarkModeToggle />
-          </button>
+          </div>
         </div>
       </div>
     </div>

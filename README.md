@@ -1,69 +1,73 @@
-# React + TypeScript + Vite
+# Finance Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, responsive finance dashboard built with **React**, **TypeScript**, **Tailwind CSS**, and **Recharts**, featuring real-time transaction management, budget tracking, and goal setting.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Features
 
-## Expanding the ESLint configuration
+### 💰 Transaction Management
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **TransactionTable**: View all transactions with search and filters.
+- **AddTransactionForm**: Add new transactions via a **Modal**.
+- Editable and deletable transactions.
+- Real-time updates; all computations derived from `transactions` state.
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### 📊 Analytics & Visualization
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+- **StatCard**: Quick overview of income, expenses, and balance.
+- **SpendingTrendChart**: Visualize spending trends over time using **Recharts LineChart**.
+- **PieChart**: Category-wise breakdown of expenses.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### 📈 Budget Tracking
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+- Set budget limits per category.
+- **BudgetBar**: Visualize progress and warnings with conditional styling.
+- Over-budget alerts for categories exceeding limits.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### 🎯 Goal Setting
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- Set financial goals with target amount and deadline.
+- **GoalProgress**: Shows progress percentage, countdown to deadline, and progress bar.
+
+### 🧑‍🎨 Modern UI & UX
+
+- Built with **Tailwind CSS** and gradient themes.
+- Smooth transitions using **Framer Motion** or Tailwind classes.
+- Responsive layout for mobile, tablet, and desktop.
+- **FAB (Floating Action Button)** for adding new transactions.
+
+---
+
+## Installation
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/your-username/finance-dashboard.git
+cd finance-dashboard
+Install dependencies:
+npm install
+npm run dev
+Open http://localhost:3000 in your browser.
+
+
+Technologies Used
+React + TypeScript
+
+Tailwind CSS
+
+Framer Motion
+
+Recharts
+
+Local state management (React useState, useReducer)
+
+Future Improvements
+Persist transactions with localStorage or backend.
+
+Add authentication for multiple users.
+
+Export transactions to CSV or PDF.
+
 ```
