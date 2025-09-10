@@ -6,14 +6,14 @@ import { TrendingUp, TrendingDown, Wallet } from "lucide-react";
 
 export default function Dashboard() {
   return (
-    <div className="p-4 sm:p-6 bg-gray-50 dark:bg-gray-900 transition-colors duration-300 min-w-screen">
+    <div className="p-4 sm:p-6 bg-gray-50 dark:bg-gray-900 transition-colors duration-300 min-h-screen w-full max-w-full overflow-x-hidden">
       {/* Title */}
       <h1 className="text-2xl font-bold mb-6 text-blue-400 dark:text-blue-300 text-left">
         Dashboard Overview
       </h1>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 w-full">
         <StatCard
           title="Income"
           amount={150000}
@@ -35,12 +35,12 @@ export default function Dashboard() {
       </div>
 
       {/* Charts */}
-      <div className="mt-6 w-full overflow-x-auto">
+      <div className="mt-6 w-full">
         <Charts />
       </div>
 
       {/* Transactions Table */}
-      <div className="mt-6 w-full overflow-x-auto">
+      <div className="mt-6 w-full">
         <TransactionsTable />
       </div>
     </div>

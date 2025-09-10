@@ -15,7 +15,7 @@ export default function StatCard({ title, amount, icon, color }: StatCardProps) 
   };
 
   return (
-    <div className="p-4 bg-white dark:bg-gray-800 rounded-xl w-full min-w-0 shadow hover:shadow-md transition duration-200">
+    <div className="p-4 bg-white dark:bg-gray-800 rounded-xl  min-w-0 shadow hover:shadow-md transition duration-200">
       <div className="flex items-center justify-between min-w-0">
         {/* Icon with dynamic color */}
         <div className={`${colorMap[color]} text-2xl flex-shrink-0`}>{icon}</div>
