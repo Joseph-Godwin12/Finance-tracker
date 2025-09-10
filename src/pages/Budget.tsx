@@ -21,7 +21,7 @@ export default function BudgetPage() {
     return saved ? JSON.parse(saved) : [];
   });
 
-  const [transactions, setTransactions] = useState<Transaction[]>(() => {
+  const [transactions] = useState<Transaction[]>(() => {
     const saved = localStorage.getItem("transactions");
     return saved ? JSON.parse(saved) : [];
   });
