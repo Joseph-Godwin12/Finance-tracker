@@ -1,22 +1,34 @@
 import { useEffect, useState } from "react";
 
+interface BeforeInstallPromptEvent extends Event {
+  readonly platforms: string[];
+  readonly userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
+  prompt(): Promise<void>;
+}
 export function usePWAInstall() {
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [deferredPrompt, setDeferredPrompt] =
+    useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
 
   useEffect(() => {
-    // Detect when app is installed
-    window.addEventListener("appinstalled", () => {
-      setIsInstalled(true);
-    });
+    // ✅ Detect if already installed
+    const isStandalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      (window.navigator as any).standalone === true;
 
-    // Save the install prompt event
-    const handler = (e: any) => {
+    if (isStandalone) {
+      setIsInstalled(true);
+      return;
+    }
+
+    // ✅ Detect install event
+    const handler = (e: Event) => {
       e.preventDefault();
-      setDeferredPrompt(e);
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
     };
 
     window.addEventListener("beforeinstallprompt", handler);
+    window.addEventListener("appinstalled", () => setIsInstalled(true));
 
     return () => {
       window.removeEventListener("beforeinstallprompt", handler);
@@ -24,15 +36,13 @@ export function usePWAInstall() {
   }, []);
 
   const showInstallPrompt = async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    const choice = await deferredPrompt.userChoice;
-    if (choice.outcome === "accepted") {
-      console.log("✅ App installed");
-    } else {
-      console.log("❌ Install dismissed");
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const choice = await deferredPrompt.userChoice;
+      setDeferredPrompt(null);
+      return choice.outcome === "accepted";
     }
-    setDeferredPrompt(null);
+    return false;
   };
 
   return { isInstalled, showInstallPrompt };

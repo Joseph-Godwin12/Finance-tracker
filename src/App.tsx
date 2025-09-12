@@ -19,9 +19,10 @@ export default function App() {
   const { isInstalled, showInstallPrompt } = usePWAInstall();
   const [showModal, setShowModal] = useState(false);
 
-  // ✅ Show modal only if app is not installed
+  // ✅ Show modal only if not installed & user didn't click "Maybe Later"
   useEffect(() => {
-    if (!isInstalled) {
+    const maybeLater = localStorage.getItem("pwaMaybeLater");
+    if (!isInstalled && !maybeLater) {
       setTimeout(() => setShowModal(true), 2000); // show after 2s
     }
   }, [isInstalled]);
@@ -77,7 +78,10 @@ export default function App() {
                 Install
               </button>
               <button
-                onClick={() => setShowModal(false)}
+                onClick={() => {
+                  localStorage.setItem("pwaMaybeLater", "true"); // 🔥 store choice
+                  setShowModal(false);
+                }}
                 className="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-white rounded-lg hover:bg-gray-400 dark:hover:bg-gray-500 transition"
               >
                 Maybe Later
