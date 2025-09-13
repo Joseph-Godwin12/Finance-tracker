@@ -2,6 +2,8 @@
 import { useEffect, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import DarkModeToggle from "../components/DarkModeToggle";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { db, auth } from "../firebase";
 
 interface Props {
   darkMode: boolean;
@@ -11,11 +13,11 @@ interface Props {
 // Context type from Layout
 interface OutletContext {
   setProfile: (profile: { name: string; avatar: string }) => void;
-  userEmail: string;
 }
 
 export default function Settings({ darkMode, setDarkMode }: Props) {
-  const { setProfile, userEmail } = useOutletContext<OutletContext>();
+  const { setProfile } = useOutletContext<OutletContext>();
+  const user = auth.currentUser;
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -25,21 +27,29 @@ export default function Settings({ darkMode, setDarkMode }: Props) {
   const [language, setLanguage] = useState("English");
   const [avatar, setAvatar] = useState<string>("");
 
-  // Load saved settings per user
+  // Load user settings from Firestore
   useEffect(() => {
-    const saved = localStorage.getItem(`settings_${userEmail}`);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      setName(parsed.name || "");
-      setEmail(parsed.email || "");
-      setCurrency(parsed.currency || "NGN");
-      setPhone(parsed.phone || "");
-      setTimezone(parsed.timezone || "GMT+1");
-      setLanguage(parsed.language || "English");
-      setAvatar(parsed.avatar || "");
-      setProfile({ name: parsed.name || "User", avatar: parsed.avatar || "" });
-    }
-  }, [setProfile, userEmail]);
+    if (!user) return;
+
+    const loadSettings = async () => {
+      const docRef = doc(db, "userSettings", user.uid);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setName(data.name || "");
+        setEmail(data.email || "");
+        setCurrency(data.currency || "NGN");
+        setPhone(data.phone || "");
+        setTimezone(data.timezone || "GMT+1");
+        setLanguage(data.language || "English");
+        setAvatar(data.avatar || "");
+        setProfile({ name: data.name || "User", avatar: data.avatar || "" });
+      }
+    };
+
+    loadSettings();
+  }, [user, setProfile]);
 
   // Handle profile picture upload
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,19 +63,23 @@ export default function Settings({ darkMode, setDarkMode }: Props) {
     reader.readAsDataURL(file);
   };
 
-  // Save all changes per user
-  const handleSave = () => {
-    const updated = { name, email, currency, phone, timezone, language, avatar };
-    localStorage.setItem(`settings_${userEmail}`, JSON.stringify(updated));
-    setProfile({ name, avatar });
-    alert("Settings saved successfully!");
+  // Save changes to Firestore
+  const handleSave = async () => {
+    if (!user) return;
 
-    setName("");
-    setEmail("");
-    setCurrency("NGN");
-    setPhone("");
-    setTimezone("GMT+1");
-    setLanguage("English");
+    const updatedSettings = { name, email, currency, phone, timezone, language, avatar };
+    const docRef = doc(db, "userSettings", user.uid);
+
+    try {
+      await setDoc(docRef, updatedSettings);
+      setProfile({ name, avatar });
+      alert("Settings saved successfully!");
+      // Optionally clear form
+      // setName(""); setEmail(""); setPhone(""); etc.
+    } catch (error) {
+      console.error("Error saving settings: ", error);
+      alert("Failed to save settings. Try again.");
+    }
   };
 
   return (

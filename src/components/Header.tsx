@@ -1,9 +1,10 @@
-// src/pages/Layout.tsx
+// src/components/Layout.tsx
 import { useState, useEffect, useRef } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import { Menu, X, Home, CreditCard, Target, PieChart, Settings, LogOut } from "lucide-react";
 import { signOut } from "firebase/auth";
-import { auth } from "../firebase";
+import { auth, db } from "../firebase";
+import { doc, getDoc } from "firebase/firestore";
 
 export default function Layout() {
   const [open, setOpen] = useState<boolean>(false);
@@ -16,41 +17,42 @@ export default function Layout() {
   const sidebarRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const user = auth.currentUser;
 
-  const userEmail = localStorage.getItem("userEmail") || "user@example.com";
-
-  // Load profile for current user
+  // Load profile from Firestore
   useEffect(() => {
-    const saved = localStorage.getItem(`settings_${userEmail}`);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      setProfile({ name: parsed.name || "User", avatar: parsed.avatar || "" });
-    }
-  }, [userEmail]);
+    if (!user) return;
+
+    const loadProfile = async () => {
+      const docRef = doc(db, "userSettings", user.uid);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setProfile({ name: data.name || "User", avatar: data.avatar || "" });
+      } else {
+        setProfile({ name: "User", avatar: "" });
+      }
+    };
+
+    loadProfile();
+  }, [user]);
 
   // Close sidebar/dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (
-        open &&
-        sidebarRef.current &&
-        !sidebarRef.current.contains(event.target as Node)
-      ) setOpen(false);
-
-      if (
-        dropdownOpen &&
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) setDropdownOpen(false);
+      if (open && sidebarRef.current && !sidebarRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+      if (dropdownOpen && dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false);
+      }
     }
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [open, dropdownOpen]);
 
   const handleLogout = async () => {
     await signOut(auth);
-    localStorage.removeItem("userEmail");
     navigate("/login");
   };
 
@@ -68,10 +70,7 @@ export default function Layout() {
       >
         <div className="p-6 font-bold text-xl border-b border-blue-300 dark:border-blue-700 flex justify-between items-center">
           <span className="hidden lg:block truncate">Fintech</span>
-          <button
-            className="lg:hidden text-blue-400 dark:text-blue-300"
-            onClick={() => setOpen(false)}
-          >
+          <button className="lg:hidden text-blue-400 dark:text-blue-300" onClick={() => setOpen(false)}>
             <X size={24} />
           </button>
         </div>
@@ -137,7 +136,7 @@ export default function Layout() {
 
         {/* Routed Pages */}
         <main className="pt-24 p-4 sm:p-6 bg-gray-50 dark:bg-gray-900">
-          <Outlet context={{ setProfile, userEmail }} />
+          <Outlet context={{ setProfile }} />
         </main>
       </div>
     </div>
