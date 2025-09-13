@@ -5,7 +5,12 @@ export default function Transaction() {
         <h1 className="text-2xl font-bold mb-6 text-blue-400 dark:text-blue-300">
             Transactions
         </h1>
-            <TransactionsTable />
+            <TransactionsTable
+                transactions={[]}
+                onAdd={() => {}}
+                onUpdate={() => {}}
+                onDelete={() => {}}
+            />
         </div>
     )
 }
