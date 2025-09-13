@@ -4,7 +4,7 @@ import { Link, Outlet, useNavigate } from "react-router-dom";
 import { Menu, X, Home, CreditCard, Target, PieChart, Settings, LogOut } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth, db } from "../firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, onSnapshot } from "firebase/firestore";
 
 export default function Layout() {
   const [open, setOpen] = useState<boolean>(false);
@@ -17,24 +17,25 @@ export default function Layout() {
   const sidebarRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+
   const user = auth.currentUser;
 
-  // Load profile from Firestore
+  // Real-time profile listener
   useEffect(() => {
     if (!user) return;
 
-    const loadProfile = async () => {
-      const docRef = doc(db, "userSettings", user.uid);
-      const docSnap = await getDoc(docRef);
+    const docRef = doc(db, "userSettings", user.uid);
+    const unsubscribe = onSnapshot(docRef, (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
-        setProfile({ name: data.name || "User", avatar: data.avatar || "" });
-      } else {
-        setProfile({ name: "User", avatar: "" });
+        setProfile({
+          name: data.name || "User",
+          avatar: data.avatar || "",
+        });
       }
-    };
+    });
 
-    loadProfile();
+    return () => unsubscribe();
   }, [user]);
 
   // Close sidebar/dropdown when clicking outside
@@ -126,7 +127,10 @@ export default function Layout() {
             {/* Dropdown menu */}
             {dropdownOpen && (
               <div ref={dropdownRef} className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 shadow-lg rounded-lg py-2 z-50">
-                <button onClick={handleLogout} className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2">
+                <button
+                  onClick={handleLogout}
+                  className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                >
                   <LogOut size={16} /> Log Out
                 </button>
               </div>

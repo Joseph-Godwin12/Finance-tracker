@@ -2,8 +2,8 @@
 import { useEffect, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import DarkModeToggle from "../components/DarkModeToggle";
-import { doc, getDoc, setDoc } from "firebase/firestore";
-import { db, auth } from "../firebase";
+import { auth, db } from "../firebase";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 
 interface Props {
   darkMode: boolean;
@@ -34,7 +34,6 @@ export default function Settings({ darkMode, setDarkMode }: Props) {
     const loadSettings = async () => {
       const docRef = doc(db, "userSettings", user.uid);
       const docSnap = await getDoc(docRef);
-
       if (docSnap.exists()) {
         const data = docSnap.data();
         setName(data.name || "");
@@ -51,6 +50,25 @@ export default function Settings({ darkMode, setDarkMode }: Props) {
     loadSettings();
   }, [user, setProfile]);
 
+  // Update Firestore and header immediately
+  const handleSave = async () => {
+    if (!user) return;
+
+    const updated = { name, email, currency, phone, timezone, language, avatar };
+    await setDoc(doc(db, "userSettings", user.uid), updated, { merge: true });
+    setProfile({ name, avatar });
+    alert("Settings saved successfully!");
+    
+    // Clear form
+    setName("");
+    setEmail("");
+    setCurrency("NGN");
+    setPhone("");
+    setTimezone("GMT+1");
+    setLanguage("English");
+    setAvatar("");
+  };
+
   // Handle profile picture upload
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -59,27 +77,9 @@ export default function Settings({ darkMode, setDarkMode }: Props) {
     const reader = new FileReader();
     reader.onloadend = () => {
       setAvatar(reader.result as string);
+      setProfile({ name, avatar: reader.result as string });
     };
     reader.readAsDataURL(file);
-  };
-
-  // Save changes to Firestore
-  const handleSave = async () => {
-    if (!user) return;
-
-    const updatedSettings = { name, email, currency, phone, timezone, language, avatar };
-    const docRef = doc(db, "userSettings", user.uid);
-
-    try {
-      await setDoc(docRef, updatedSettings);
-      setProfile({ name, avatar });
-      alert("Settings saved successfully!");
-      // Optionally clear form
-      // setName(""); setEmail(""); setPhone(""); etc.
-    } catch (error) {
-      console.error("Error saving settings: ", error);
-      alert("Failed to save settings. Try again.");
-    }
   };
 
   return (
@@ -118,7 +118,10 @@ export default function Settings({ darkMode, setDarkMode }: Props) {
           <input
             type="text"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => {
+              setName(e.target.value);
+              setProfile({ name: e.target.value, avatar });
+            }}
             className="w-full border rounded-lg px-3 py-2 dark:bg-gray-700 dark:border-gray-600"
           />
         </div>
@@ -189,10 +192,7 @@ export default function Settings({ darkMode, setDarkMode }: Props) {
         {/* Dark Mode */}
         <div className="flex items-center justify-between">
           <span className="font-medium">Dark Mode</span>
-          <div
-            onClick={() => setDarkMode(!darkMode)}
-            className="cursor-pointer px-2 py-1"
-          >
+          <div onClick={() => setDarkMode(!darkMode)} className="cursor-pointer px-2 py-1">
             <DarkModeToggle />
           </div>
         </div>
