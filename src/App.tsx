@@ -52,6 +52,7 @@ export default function App() {
     }
     localStorage.setItem("darkMode", JSON.stringify(darkMode));
   }, [darkMode]);
+  
 
   if (loadingAuth) {
     return <div className="flex items-center justify-center h-screen">Loading...</div>;

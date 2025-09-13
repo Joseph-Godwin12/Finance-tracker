@@ -1,33 +1,69 @@
+// src/pages/Dashboard.tsx
 import { useState, useEffect } from "react";
 import StatCard from "../components/StatCard";
 import TransactionsTable from "../components/TransactionTable";
 import type { Transaction } from "../components/TransactionTable";
 import Charts from "../components/Charts";
 import { TrendingUp, TrendingDown, Wallet } from "lucide-react";
+import { db, auth } from "../firebase";
+import {
+  collection,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+  query,
+  orderBy,
+  onSnapshot,
+  serverTimestamp
+} from "firebase/firestore";
 
 export default function Dashboard() {
-  // --- Transactions State (empty initially) ---
-  const [transactions, setTransactions] = useState<Transaction[]>(() => {
-    const saved = localStorage.getItem("transactions");
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
 
-  // --- Keep localStorage in sync ---
+  const userId = auth.currentUser?.uid;
+
+  // --- Fetch transactions from Firestore for the logged-in user ---
   useEffect(() => {
-    localStorage.setItem("transactions", JSON.stringify(transactions));
-  }, [transactions]);
+    if (!userId) return;
+
+    const q = query(
+      collection(db, "users", userId, "transactions"),
+      orderBy("createdAt", "desc")
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Transaction[];
+      setTransactions(data);
+      // Also sync to localStorage for offline persistence
+      localStorage.setItem("transactions", JSON.stringify(data));
+    });
+
+    return () => unsubscribe();
+  }, [userId]);
 
   // --- Transaction handlers ---
-  const handleAdd = (tx: Omit<Transaction, "id">) => {
-    setTransactions([{ id: Date.now().toString(), ...tx }, ...transactions]);
+  const handleAdd = async (tx: Omit<Transaction, "id">) => {
+    if (!userId) return;
+    await addDoc(collection(db, "users", userId, "transactions"), {
+      ...tx,
+      createdAt: serverTimestamp(),
+    });
   };
 
-  const handleUpdate = (updated: Transaction) => {
-    setTransactions(transactions.map((tx) => (tx.id === updated.id ? updated : tx)));
+  const handleUpdate = async (updated: Transaction) => {
+    if (!userId) return;
+    const txRef = doc(db, "users", userId, "transactions", updated.id);
+    await updateDoc(txRef, { ...updated });
   };
 
-  const handleDelete = (id: string) => {
-    setTransactions(transactions.filter((tx) => tx.id !== id));
+  const handleDelete = async (id: string) => {
+    if (!userId) return;
+    const txRef = doc(db, "users", userId, "transactions", id);
+    await deleteDoc(txRef);
   };
 
   // --- Calculate stats ---
