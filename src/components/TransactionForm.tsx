@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 interface Transaction {
-  id: number;
+  id: string;
   date: string;
   description: string;
   category: string;

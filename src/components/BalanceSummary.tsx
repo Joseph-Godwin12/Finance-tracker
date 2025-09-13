@@ -1,8 +1,8 @@
 import { useMemo } from "react";
 
-interface Transaction {
-  id: number;
-  date: string; // yyyy-MM-dd
+export interface Transaction {
+  id: string;
+  date: string;
   description: string;
   category: string;
   type: "Income" | "Expense";
