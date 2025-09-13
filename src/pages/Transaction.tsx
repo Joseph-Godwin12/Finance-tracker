@@ -18,7 +18,8 @@ import type { Transaction } from "../components/TransactionTable";
 export default function TransactionsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
-  const userId = auth.currentUser?.uid;
+  const user = auth.currentUser;
+  const userId = user?.uid;
 
   // Fetch transactions for the current user
   useEffect(() => {
@@ -30,10 +31,10 @@ export default function TransactionsPage() {
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data: Transaction[] = snapshot.docs.map((doc) => ({
-        id: doc.id, // Firestore doc ID
-        ...(doc.data() as Omit<Transaction, "id">), // Type assertion
-      }));
+      const data = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Transaction[];
       setTransactions(data);
     });
 
@@ -45,14 +46,14 @@ export default function TransactionsPage() {
     if (!userId) return;
     await addDoc(collection(db, "users", userId, "transactions"), {
       ...tx,
-      createdAt: serverTimestamp(),
+      createdAt: serverTimestamp()
     });
   };
 
   // Update a transaction
   const handleUpdate = async (tx: Transaction) => {
     if (!userId) return;
-    const txRef = doc(db, "users", userId, "transactions", tx.id);
+    const txRef = doc(db, "users", userId, "transactions", tx.id.toString());
     await updateDoc(txRef, { ...tx });
   };
 

@@ -1,23 +1,11 @@
-// src/components/TransactionTable.tsx
-import { useState, useEffect } from "react";
+// src/components/TransactionsTable.tsx
+import { useState } from "react";
 import { Pencil, Trash2, Plus } from "lucide-react";
 import TransactionForm from "./TransactionForm";
 import BalanceSummary from "./BalanceSummary";
-import { db, auth } from "../firebase";
-import {
-  collection,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  doc,
-  query,
-  orderBy,
-  onSnapshot,
-  serverTimestamp
-} from "firebase/firestore";
 
 export interface Transaction {
-  id: string; // Firestore document ID
+  id: string; // Firestore ID
   date: string;
   description: string;
   category: string;
@@ -25,98 +13,30 @@ export interface Transaction {
   amount: number;
 }
 
-interface TransactionTableProps {
-  transactions?: Transaction[]; // optional if managing internally
-  onAdd?: (tx: Omit<Transaction, "id">) => void | Promise<void>;
-  onUpdate?: (updated: Transaction) => void | Promise<void>;
-  onDelete?: (id: string) => void | Promise<void>;
+interface TransactionsTableProps {
+  transactions: Transaction[];
+  onAdd: (tx: Omit<Transaction, "id">) => void;
+  onUpdate: (tx: Transaction) => void;
+  onDelete: (id: string) => void;
 }
 
-export default function TransactionTable({
-  transactions: externalTransactions,
-  onAdd: externalAdd,
-  onUpdate: externalUpdate,
-  onDelete: externalDelete,
-}: TransactionTableProps) {
-  const [transactions, setTransactions] = useState<Transaction[]>(externalTransactions || []);
+export default function TransactionsTable({
+  transactions,
+  onAdd,
+  onUpdate,
+  onDelete,
+}: TransactionsTableProps) {
   const [showForm, setShowForm] = useState(false);
   const [editTx, setEditTx] = useState<Transaction | null>(null);
-
-  const userId = auth.currentUser?.uid;
-
-  // --- Sync Firebase data ---
-  useEffect(() => {
-    if (!userId) return;
-
-    const q = query(
-      collection(db, "users", userId, "transactions"),
-      orderBy("createdAt", "desc")
-    );
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Transaction[];
-      setTransactions(data);
-    });
-
-    return () => unsubscribe();
-  }, [userId]);
-
-  // --- Local + Firebase add ---
-  const handleAdd = async (tx: Omit<Transaction, "id">) => {
-    // Update UI immediately
-    const tempId = Date.now().toString();
-    setTransactions([{ id: tempId, ...tx }, ...transactions]);
-
-    if (userId) {
-      const docRef = await addDoc(collection(db, "users", userId, "transactions"), {
-        ...tx,
-        createdAt: serverTimestamp(),
-      });
-      // Replace temp ID with real Firestore ID
-      setTransactions((prev) =>
-        prev.map((t) => (t.id === tempId ? { ...t, id: docRef.id } : t))
-      );
-    }
-
-    if (externalAdd) await externalAdd(tx);
-  };
-
-  // --- Local + Firebase update ---
-  const handleUpdate = async (tx: Transaction) => {
-    setTransactions((prev) => prev.map((t) => (t.id === tx.id ? tx : t)));
-
-    if (userId) {
-      const txRef = doc(db, "users", userId, "transactions", tx.id);
-      await updateDoc(txRef, { ...tx });
-    }
-
-    if (externalUpdate) await externalUpdate(tx);
-  };
-
-  // --- Local + Firebase delete ---
-  const handleDelete = async (id: string) => {
-    setTransactions((prev) => prev.filter((t) => t.id !== id));
-
-    if (userId) {
-      const txRef = doc(db, "users", userId, "transactions", id);
-      await deleteDoc(txRef);
-    }
-
-    if (externalDelete) await externalDelete(id);
-  };
 
   return (
     <div className="p-4 bg-white dark:bg-gray-800 rounded-xl shadow w-full max-w-full">
       <h2 className="text-lg font-semibold mb-4 text-blue-400 dark:text-blue-300">
         Transactions
       </h2>
-
       <BalanceSummary transactions={transactions} />
 
-      {/* Mobile View */}
+      {/* Mobile Card View */}
       <div className="block sm:hidden space-y-3 mt-4">
         {transactions.length === 0 ? (
           <p className="text-center text-gray-500 dark:text-gray-400">
@@ -124,15 +44,10 @@ export default function TransactionTable({
           </p>
         ) : (
           transactions.map((tx) => (
-            <div
-              key={tx.id}
-              className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700"
-            >
+            <div key={tx.id} className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700">
               <div className="flex justify-between items-start mb-2">
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-gray-900 dark:text-gray-100 truncate">
-                    {tx.description}
-                  </p>
+                  <p className="font-medium text-gray-900 dark:text-gray-100 truncate">{tx.description}</p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     {new Date(tx.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })} • {tx.category}
                   </p>
@@ -146,7 +61,7 @@ export default function TransactionTable({
                   </button>
                   <button
                     className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
-                    onClick={() => handleDelete(tx.id)}
+                    onClick={() => onDelete(tx.id)}
                   >
                     <Trash2 size={16} />
                   </button>
@@ -163,7 +78,7 @@ export default function TransactionTable({
         )}
       </div>
 
-      {/* Desktop Table */}
+      {/* Desktop Table View */}
       <div className="hidden sm:block overflow-x-auto">
         {transactions.length === 0 ? (
           <p className="text-center text-gray-500 dark:text-gray-400 py-6">
@@ -203,7 +118,7 @@ export default function TransactionTable({
                       </button>
                       <button
                         className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
-                        onClick={() => handleDelete(tx.id)}
+                        onClick={() => onDelete(tx.id)}
                       >
                         <Trash2 size={18} />
                       </button>
@@ -228,8 +143,8 @@ export default function TransactionTable({
       {showForm && (
         <TransactionForm
           initialData={editTx || undefined}
-          onAdd={handleAdd}
-          onUpdate={handleUpdate}
+          onAdd={onAdd}
+          onUpdate={onUpdate}
           onClose={() => setShowForm(false)}
         />
       )}

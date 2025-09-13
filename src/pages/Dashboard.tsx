@@ -1,51 +1,16 @@
-// src/pages/Dashboard.tsx
 import { useState, useEffect } from "react";
 import StatCard from "../components/StatCard";
 import TransactionsTable from "../components/TransactionTable";
 import type { Transaction } from "../components/TransactionTable";
 import Charts from "../components/Charts";
 import { TrendingUp, TrendingDown, Wallet } from "lucide-react";
-import { db, auth } from "../firebase";
-import {
-  collection,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  doc,
-  query,
-  orderBy,
-  onSnapshot,
-  serverTimestamp,
-} from "firebase/firestore";
 
 export default function Dashboard() {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const user = auth.currentUser;
-  const userId = user?.uid;
-
-  // --- Fetch transactions from Firebase ---
-  useEffect(() => {
-    if (!userId) return;
-
-    const q = query(
-      collection(db, "users", userId, "transactions"),
-      orderBy("createdAt", "desc")
-    );
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data: Transaction[] = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        date: doc.data().date,
-        description: doc.data().description,
-        category: doc.data().category,
-        type: doc.data().type,
-        amount: doc.data().amount,
-      }));
-      setTransactions(data);
-    });
-
-    return () => unsubscribe();
-  }, [userId]);
+  // --- Transactions State (empty initially) ---
+  const [transactions, setTransactions] = useState<Transaction[]>(() => {
+    const saved = localStorage.getItem("transactions");
+    return saved ? JSON.parse(saved) : [];
+  });
 
   // --- Keep localStorage in sync ---
   useEffect(() => {
@@ -53,46 +18,16 @@ export default function Dashboard() {
   }, [transactions]);
 
   // --- Transaction handlers ---
-  const handleAdd = async (tx: Omit<Transaction, "id">) => {
-    if (!userId) return;
-
-    try {
-      const docRef = await addDoc(
-        collection(db, "users", userId, "transactions"),
-        {
-          ...tx,
-          createdAt: serverTimestamp(),
-        }
-      );
-      setTransactions([{ id: docRef.id, ...tx }, ...transactions]);
-    } catch (error) {
-      console.error("Error adding transaction:", error);
-    }
+  const handleAdd = (tx: Omit<Transaction, "id">) => {
+    setTransactions([{ id: Date.now().toString(), ...tx }, ...transactions]);
   };
 
-  const handleUpdate = async (updated: Transaction) => {
-    if (!userId) return;
-
-    try {
-      const txRef = doc(db, "users", userId, "transactions", updated.id);
-      await updateDoc(txRef, { ...updated });
-      setTransactions(
-        transactions.map((tx) => (tx.id === updated.id ? updated : tx))
-      );
-    } catch (error) {
-      console.error("Error updating transaction:", error);
-    }
+  const handleUpdate = (updated: Transaction) => {
+    setTransactions(transactions.map((tx) => (tx.id === updated.id ? updated : tx)));
   };
 
-  const handleDelete = async (id: string) => {
-    if (!userId) return;
-
-    try {
-      await deleteDoc(doc(db, "users", userId, "transactions", id));
-      setTransactions(transactions.filter((tx) => tx.id !== id));
-    } catch (error) {
-      console.error("Error deleting transaction:", error);
-    }
+  const handleDelete = (id: string) => {
+    setTransactions(transactions.filter((tx) => tx.id !== id));
   };
 
   // --- Calculate stats ---
@@ -113,24 +48,9 @@ export default function Dashboard() {
 
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 w-full">
-        <StatCard
-          title="Income"
-          amount={incomeTotal}
-          icon={<TrendingUp size={28} />}
-          color="green"
-        />
-        <StatCard
-          title="Expenses"
-          amount={expenseTotal}
-          icon={<TrendingDown size={28} />}
-          color="red"
-        />
-        <StatCard
-          title="Balance"
-          amount={balanceTotal}
-          icon={<Wallet size={28} />}
-          color="blue"
-        />
+        <StatCard title="Income" amount={incomeTotal} icon={<TrendingUp size={28} />} color="green" />
+        <StatCard title="Expenses" amount={expenseTotal} icon={<TrendingDown size={28} />} color="red" />
+        <StatCard title="Balance" amount={balanceTotal} icon={<Wallet size={28} />} color="blue" />
       </div>
 
       {/* Charts */}
