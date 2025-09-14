@@ -12,9 +12,9 @@ export interface Transaction {
   category: string;
   type: "Income" | "Expense";
   amount: number;
-  userId?: string; // Optional for backward compatibility, but recommended
-  createdAt?: any; // Firestore timestamp
-  updatedAt?: any; // Firestore timestamp
+  userId?: string; 
+  createdAt?: any; 
+  updatedAt?: any; 
 }
 
 // Type for creating new transactions (without Firestore-generated fields)

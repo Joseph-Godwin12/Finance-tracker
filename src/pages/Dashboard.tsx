@@ -6,6 +6,7 @@ import StatCard from "../components/StatCard";
 import TransactionsTable from "../components/TransactionTable";
 import type { Transaction } from "../components/TransactionTable";
 import Charts from "../components/Charts";
+import Loading from "../components/Loader";
 import { TrendingUp, TrendingDown, Wallet } from "lucide-react";
 import { db, auth } from "../firebase";
 import {
@@ -155,18 +156,14 @@ export default function Dashboard() {
   // Show loading state while checking authentication
   if (authLoading) {
     return (
-      <div className="flex items-center justify-center h-screen text-gray-500">
-        Checking authentication...
-      </div>
+      <Loading />
     );
   }
 
   // Show loading state while fetching user data
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen text-gray-500">
-        Loading your dashboard...
-      </div>
+      <Loading />
     );
   }
 
