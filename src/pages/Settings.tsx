@@ -105,6 +105,7 @@ export default function Settings({ darkMode, setDarkMode }: Props) {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'profile' | 'preferences' | 'security' | 'data'>('profile');
+  const [uploadingAvatar] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
@@ -382,15 +383,24 @@ export default function Settings({ darkMode, setDarkMode }: Props) {
                   />
                   <label
                     htmlFor="avatarUpload"
-                    className="absolute bottom-0 right-0 bg-blue-400 dark:bg-blue-500 w-8 h-8 rounded-full flex items-center justify-center cursor-pointer hover:bg-blue-500 dark:hover:bg-blue-400 transition-colors"
+                    className={`absolute bottom-0 right-0 w-8 h-8 rounded-full flex items-center justify-center cursor-pointer transition-colors ${
+                      uploadingAvatar 
+                        ? 'bg-gray-400 cursor-not-allowed' 
+                        : 'bg-blue-400 dark:bg-blue-500 hover:bg-blue-500 dark:hover:bg-blue-400'
+                    }`}
                   >
-                    <Camera size={16} className="text-white" />
+                    {uploadingAvatar ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    ) : (
+                      <Camera size={16} className="text-white" />
+                    )}
                   </label>
                   <input
                     type="file"
                     id="avatarUpload"
                     accept="image/*"
                     onChange={handleAvatarChange}
+                    disabled={uploadingAvatar}
                     className="hidden"
                   />
                 </div>
