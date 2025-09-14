@@ -1,5 +1,6 @@
 // src/pages/Dashboard.tsx
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import StatCard from "../components/StatCard";
 import TransactionsTable from "../components/TransactionTable";
 import type { Transaction } from "../components/TransactionTable";
@@ -15,13 +16,25 @@ import {
   query,
   orderBy,
   onSnapshot,
-  serverTimestamp
+  serverTimestamp,
 } from "firebase/firestore";
 
 export default function Dashboard() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   const userId = auth.currentUser?.uid;
+
+  // --- Redirect if no user is logged in ---
+  useEffect(() => {
+    const unsubscribeAuth = auth.onAuthStateChanged((user) => {
+      if (!user) {
+        navigate("/login");
+      }
+    });
+    return () => unsubscribeAuth();
+  }, [navigate]);
 
   // --- Fetch transactions from Firestore for the logged-in user ---
   useEffect(() => {
@@ -33,13 +46,15 @@ export default function Dashboard() {
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Transaction[];
+      const data = snapshot.docs.map(
+        (doc) =>
+          ({
+            id: doc.id,
+            ...doc.data(),
+          } as Transaction)
+      );
       setTransactions(data);
-      // Also sync to localStorage for offline persistence
-      localStorage.setItem("transactions", JSON.stringify(data));
+      setLoading(false);
     });
 
     return () => unsubscribe();
@@ -75,6 +90,14 @@ export default function Dashboard() {
     .reduce((sum, tx) => sum + tx.amount, 0);
   const balanceTotal = incomeTotal - expenseTotal;
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen text-gray-500">
+        Loading dashboard...
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 sm:p-6 bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-300 w-full max-w-full overflow-x-hidden">
       {/* Title */}
@@ -84,9 +107,24 @@ export default function Dashboard() {
 
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 w-full">
-        <StatCard title="Income" amount={incomeTotal} icon={<TrendingUp size={28} />} color="green" />
-        <StatCard title="Expenses" amount={expenseTotal} icon={<TrendingDown size={28} />} color="red" />
-        <StatCard title="Balance" amount={balanceTotal} icon={<Wallet size={28} />} color="blue" />
+        <StatCard
+          title="Income"
+          amount={incomeTotal}
+          icon={<TrendingUp size={28} />}
+          color="green"
+        />
+        <StatCard
+          title="Expenses"
+          amount={expenseTotal}
+          icon={<TrendingDown size={28} />}
+          color="red"
+        />
+        <StatCard
+          title="Balance"
+          amount={balanceTotal}
+          icon={<Wallet size={28} />}
+          color="blue"
+        />
       </div>
 
       {/* Charts */}

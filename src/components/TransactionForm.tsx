@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-interface Transaction {
+export interface Transaction {
   id: string;
   date: string;
   description: string;
@@ -11,8 +11,8 @@ interface Transaction {
 
 interface Props {
   initialData?: Transaction;
-  onAdd: (tx: Omit<Transaction, "id">) => void;
-  onUpdate: (tx: Transaction) => void;
+  onAdd: (tx: Omit<Transaction, "id">) => Promise<void>;
+  onUpdate: (tx: Transaction) => Promise<void>;
   onClose: () => void;
 }
 
@@ -23,19 +23,21 @@ export default function TransactionForm({
   onClose,
 }: Props) {
   const [formData, setFormData] = useState<Omit<Transaction, "id">>({
-    date: initialData?.date || "",
+    date:
+      initialData?.date ||
+      new Date().toISOString().split("T")[0], // default to today
     description: initialData?.description || "",
     category: initialData?.category || "",
     type: initialData?.type || "Expense",
     amount: initialData?.amount || 0,
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (initialData) {
-      onUpdate({ ...initialData, ...formData });
+      await onUpdate({ ...initialData, ...formData });
     } else {
-      onAdd(formData);
+      await onAdd(formData);
     }
     onClose();
   };
@@ -50,6 +52,7 @@ export default function TransactionForm({
           {initialData ? "Edit Transaction" : "Add Transaction"}
         </h2>
 
+        {/* Date */}
         <label className="block mb-2 text-sm text-gray-700 dark:text-gray-300">
           Date
         </label>
@@ -61,6 +64,7 @@ export default function TransactionForm({
           required
         />
 
+        {/* Description */}
         <label className="block mb-2 text-sm text-gray-700 dark:text-gray-300">
           Description
         </label>
@@ -74,6 +78,7 @@ export default function TransactionForm({
           required
         />
 
+        {/* Category */}
         <label className="block mb-2 text-sm text-gray-700 dark:text-gray-300">
           Category
         </label>
@@ -87,6 +92,7 @@ export default function TransactionForm({
           required
         />
 
+        {/* Type */}
         <label className="block mb-2 text-sm text-gray-700 dark:text-gray-300">
           Type
         </label>
@@ -104,6 +110,7 @@ export default function TransactionForm({
           <option value="Expense">Expense</option>
         </select>
 
+        {/* Amount */}
         <label className="block mb-2 text-sm text-gray-700 dark:text-gray-300">
           Amount
         </label>
@@ -117,6 +124,7 @@ export default function TransactionForm({
           required
         />
 
+        {/* Buttons */}
         <div className="flex justify-end gap-3">
           <button
             type="button"
