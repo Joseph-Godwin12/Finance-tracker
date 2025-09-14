@@ -403,7 +403,7 @@ export default function Settings({ darkMode, setDarkMode }: Props) {
               {/* Form Fields */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2 flex items-center gap-2">
+                  <label className="flex text-sm font-medium mb-2 items-center gap-2">
                     <UserIcon size={16} />
                     Display Name
                   </label>
@@ -417,7 +417,7 @@ export default function Settings({ darkMode, setDarkMode }: Props) {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2 flex items-center gap-2">
+                  <label className="flex text-sm font-medium mb-2 items-center gap-2">
                     <Mail size={16} />
                     Email
                   </label>
@@ -431,7 +431,7 @@ export default function Settings({ darkMode, setDarkMode }: Props) {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2 flex items-center gap-2">
+                  <label className="flex text-sm font-medium mb-2  items-center gap-2">
                     <Phone size={16} />
                     Phone Number
                   </label>
@@ -445,7 +445,7 @@ export default function Settings({ darkMode, setDarkMode }: Props) {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2 flex items-center gap-2">
+                  <label className="flex text-sm font-medium mb-2 items-center gap-2">
                     <DollarSign size={16} />
                     Preferred Currency
                   </label>
@@ -503,7 +503,7 @@ export default function Settings({ darkMode, setDarkMode }: Props) {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2 flex items-center gap-2">
+                  <label className="flex text-sm font-medium mb-2 items-center gap-2">
                     <Clock size={16} />
                     Timezone
                   </label>
@@ -522,7 +522,7 @@ export default function Settings({ darkMode, setDarkMode }: Props) {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2 flex items-center gap-2">
+                  <label className="flex text-sm font-medium mb-2 items-center gap-2">
                     <Globe size={16} />
                     Language
                   </label>
