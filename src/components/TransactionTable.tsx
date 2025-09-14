@@ -4,14 +4,24 @@ import { Pencil, Trash2, Plus } from "lucide-react";
 import TransactionForm from "./TransactionForm";
 import BalanceSummary from "./BalanceSummary";
 
+// src/types/Transaction.ts
 export interface Transaction {
-  id: string; // Firestore ID
+  id: string; // Firestore document ID
   date: string;
   description: string;
   category: string;
   type: "Income" | "Expense";
   amount: number;
+  userId?: string; // Optional for backward compatibility, but recommended
+  createdAt?: any; // Firestore timestamp
+  updatedAt?: any; // Firestore timestamp
 }
+
+// Type for creating new transactions (without Firestore-generated fields)
+export type NewTransaction = Omit<Transaction, "id" | "createdAt" | "updatedAt" | "userId">;
+
+// Type for transaction updates (all fields optional except id)
+export type TransactionUpdate = Partial<Transaction> & { id: string };
 
 interface TransactionsTableProps {
   transactions: Transaction[];
