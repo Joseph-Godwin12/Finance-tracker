@@ -1,12 +1,15 @@
 // src/pages/Signup.tsx
 import { useState } from "react";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebase";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { auth, db } from "../firebase";
 import { useNavigate } from "react-router-dom";
+import { doc, setDoc } from "firebase/firestore";
 
 export default function Signup() {
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
@@ -16,21 +19,40 @@ export default function Signup() {
     setLoading(true);
     setError(null);
 
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      setLoading(false);
+      return;
+    }
+
     try {
+      // ✅ Create user with Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
         password
       );
+
+      // ✅ Update displayName
+      await updateProfile(userCredential.user, {
+        displayName: username,
+      });
+
+      // ✅ Save extra user info to Firestore
+      await setDoc(doc(db, "users", userCredential.user.uid), {
+        uid: userCredential.user.uid,
+        username,
+        email,
+        createdAt: new Date().toISOString(),
+      });
+
       console.log("User created:", userCredential.user);
 
-      // Save user email locally (or in context/store)
       localStorage.setItem("userEmail", userCredential.user.email || "");
 
       alert("Account created successfully!");
 
-      // Redirect to dashboard
-      navigate("/");
+      navigate("/"); // redirect to dashboard
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -51,6 +73,15 @@ export default function Signup() {
         {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
 
         <input
+          type="text"
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          className="w-full p-2 mb-3 border rounded dark:bg-gray-700 dark:border-gray-600"
+          required
+        />
+
+        <input
           type="email"
           placeholder="Email"
           value={email}
@@ -64,6 +95,15 @@ export default function Signup() {
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          className="w-full p-2 mb-3 border rounded dark:bg-gray-700 dark:border-gray-600"
+          required
+        />
+
+        <input
+          type="password"
+          placeholder="Confirm Password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
           className="w-full p-2 mb-3 border rounded dark:bg-gray-700 dark:border-gray-600"
           required
         />
